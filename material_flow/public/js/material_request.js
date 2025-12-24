@@ -95,9 +95,24 @@
 
 frappe.ui.form.on('Material Request', {
     refresh(frm) {
+        // result = frm.doc.qty - frm.doc.ordered_qty;
+         console.log("resu is for:.",frm.doc);
+
+        let show_button = false;
+
+        // Loop through all item rows
+        (frm.doc.items || []).forEach(row => {
+            if ((row.ordered_qty || 0) < (row.qty || 0)) {
+                show_button = true;
+            }
+        });
+        console.log("show button value:: ", show_button);
+
+        // Show button only when conditions are met
         if (
             frm.doc.docstatus === 1 &&
-            frm.doc.material_request_type === "Material Transfer"
+            frm.doc.material_request_type === "Material Transfer" &&
+            show_button
         ) {
             frm.add_custom_button(
                 __("Purchase Order"),
