@@ -18,11 +18,11 @@ def get_po_prefill_data(material_request, supplier, items):
     po_items = []
 
     for row in mr.items:
-        if row.name in items:
+        if row.name in items and (row.ordered_qty or 0) < (row.qty or 0):
             po_items.append({
                 "item_code": row.item_code,
                 "item_name": row.item_name,
-                "qty": row.qty,
+                "qty": row.qty - (row.ordered_qty or 0), 
                 "uom": row.uom,
                 "schedule_date": nowdate(),
                 "project": row.project or mr.project,

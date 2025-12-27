@@ -96,7 +96,7 @@
 frappe.ui.form.on('Material Request', {
     refresh(frm) {
         // result = frm.doc.qty - frm.doc.ordered_qty;
-         console.log("resu is for:.",frm.doc);
+        // console.log("resu is for:.",frm.doc);
 
         let show_button = false;
 
@@ -126,12 +126,23 @@ frappe.ui.form.on('Material Request', {
 });
 
 function open_item_selection_dialog(frm) {
-    let items = frm.doc.items.map(row => {
-        return {
-            label: `${row.item_code} - ${row.item_name}`,
-            value: row.name
-        };
-    });
+     let items = (frm.doc.items || [])
+        .filter(row => (row.ordered_qty || 0) < (row.qty || 0))
+        .map(row => {
+            return {
+                label: `${row.item_code} - ${row.item_name}`,
+                value: row.name
+            };
+        });
+
+         if (!items.length) {
+        frappe.msgprint({
+            title: __("Nothing to Order"),
+            message: __("All items are already fully ordered."),
+            indicator: "green"
+        });
+        return;
+    }
 
 let d = new frappe.ui.Dialog({
     title: "Create Purchase Order",
@@ -177,8 +188,8 @@ let d = new frappe.ui.Dialog({
                 po.supplier = r.message.supplier;
                 po.project = r.message.project;
                 po.material_request = r.message.material_request;
-
                 r.message.items.forEach(item => {
+                    
                     let row = frappe.model.add_child(po, "items");
                     Object.assign(row, item);
                 });
